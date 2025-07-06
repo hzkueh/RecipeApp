@@ -485,3 +485,5 @@ $RECYCLE.BIN/
 API/appsettings.json
 API/API.http
 API/recipe.db
+API/recipe.db-wal
+API/recipe.db-shm
