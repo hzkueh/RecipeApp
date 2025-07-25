@@ -12,6 +12,7 @@ import { UserProfile } from '../features/users/user-profile/user-profile';
 import { UserPhotos } from '../features/users/user-photos/user-photos';
 import { UserMessages } from '../features/users/user-messages/user-messages';
 import { userResolver } from '../features/users/user-resolver';
+import { preventUnsavedChangesGuard } from '../core/guards/prevent-unsaved-changes-guard';
 
 export const routes: Routes = [
     { path: '', component: Home },
@@ -28,7 +29,7 @@ export const routes: Routes = [
                 component: UserDetail,
                 children: [
                     { path : '', redirectTo: 'profile', pathMatch: 'full'},
-                    { path : 'profile',component: UserProfile, title: 'Profile'},
+                    { path : 'profile',component: UserProfile, title: 'Profile', canDeactivate : [preventUnsavedChangesGuard]},
                     { path : 'photos',component: UserPhotos, title: 'Photos'},
                     { path : 'messages',component: UserMessages, title: 'Messages'},
                 ],

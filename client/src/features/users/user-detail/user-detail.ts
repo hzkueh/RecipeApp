@@ -1,8 +1,9 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
-import { User } from '../../../types/user';
 import { AgePipe } from '../../../core/pipes/age-pipe';
+import { AccountService } from '../../../core/services/account-service';
+import { UserService } from '../../../core/services/user-service';
 
 
 @Component({
@@ -14,14 +15,18 @@ import { AgePipe } from '../../../core/pipes/age-pipe';
 export class UserDetail implements OnInit {
 
   private route = inject(ActivatedRoute);
-  private router = inject(Router)
-  protected user = signal<User | undefined>(undefined);
+  private router = inject(Router);
+  private accountService = inject(AccountService);
+  protected userService = inject(UserService);
+
+  
   protected title = signal<string | undefined>('Profile');
+  protected isCurrentUser = computed(() => {
+    return this.accountService.currentUser()?.id === this.route.snapshot.paramMap.get('id');
+  })
 
   ngOnInit(): void {
-    this.route.data.subscribe({
-      next: data => this.user.set(data['user'])
-    })
+
     this.title.set(this.route.firstChild?.snapshot?.title);
 
     this.router.events.pipe(
