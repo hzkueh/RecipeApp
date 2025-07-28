@@ -1,31 +1,72 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { UserService } from '../../../core/services/user-service';
 import { ActivatedRoute } from '@angular/router';
-import { Observable } from 'rxjs';
-import { UserPhoto } from '../../../types/user';
-import { AsyncPipe } from '@angular/common';
+import { User, UserPhoto } from '../../../types/user';
+import { ImageUpload } from "../../../shared/image-upload/image-upload";
+import { AccountService } from '../../../core/services/account-service';
+import { Account } from '../../../types/account';
+import { StarButton } from "../../../shared/star-button/star-button";
+import { DeleteButton } from "../../../shared/delete-button/delete-button";
 
 @Component({
   selector: 'app-user-photos',
-  imports: [AsyncPipe],
+  imports: [ImageUpload, StarButton, DeleteButton],
   templateUrl: './user-photos.html',
   styleUrl: './user-photos.css'
 })
-export class UserPhotos {
-  private userService = inject(UserService);
+export class UserPhotos implements OnInit {
+  protected userService = inject(UserService);
+  protected accountService = inject(AccountService);
   private route = inject(ActivatedRoute);
-  protected photos$? : Observable<UserPhoto[]>;
+  protected photos = signal<UserPhoto[]>([]);
+  protected loading = signal(false);
 
-  constructor(){
+  ngOnInit(): void {
     const userId = this.route.parent?.snapshot.paramMap.get('id');
     if(userId){
-      this.photos$ = this.userService.getUserPhotos(userId);
+      this.userService.getUserPhotos(userId).subscribe({
+        next : photos => this.photos.set(photos)
+      });
     }
   }
 
-  get photoMocks(){
-    return Array.from({length:20}, (_, i ) => ({
-      url: '/user.png'
-    }))
+  onUploadImage(file: File){
+    this.loading.set(true);
+    this.userService.uploadPhoto(file).subscribe({
+      next: photo => {
+        this.userService.editMode.set(false);
+        this.loading.set(false);
+        this.photos.update(photos => [...photos, photo])
+      },
+      error: error => {
+        console.log('Error uploading image', error);
+        this.loading.set(false);
+      }
+    })
   }
+
+  setMainPhoto(photo : UserPhoto){
+    this.userService.setMainPhoto(photo).subscribe({
+      next : () => {
+        const currentUser = this.accountService.currentUser();
+        if(currentUser) currentUser.imageURL = photo.url;
+        this.accountService.setCurrentUser(currentUser as Account);
+        this.userService.user.update(user => ({
+          //take existing props of user
+          ...user,
+          imageUrl: photo.url
+        }) as User)
+      }
+    })
+  }
+
+  deletePhoto(photoId : number){
+    this.userService.deletePhoto(photoId).subscribe({
+      next: () => {
+        this.photos.update(photos => photos.filter(x => x.id !== photoId))
+      }
+    })
+  }
+
+  
 }

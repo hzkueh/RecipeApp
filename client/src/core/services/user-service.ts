@@ -35,4 +35,18 @@ export class UserService {
   updateUser(user: EditableUSer){
     return this.http.put(this.baseUrl + 'user', user)
   }
+
+  uploadPhoto(file: File){
+    const formData = new FormData();
+    formData.append('file',file);
+    return this.http.post<UserPhoto>(this.baseUrl + 'user/add-photo', formData);
+  }
+
+  setMainPhoto(photo : UserPhoto){
+    return this.http.put(this.baseUrl + 'user/set-main-photo/' + photo.id, {});
+  }
+
+  deletePhoto(photoId: number){
+    return this.http.delete(this.baseUrl + 'user/delete-photo/' + photoId);
+  }
 }
