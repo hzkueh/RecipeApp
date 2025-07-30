@@ -20,6 +20,7 @@ export class UserPhotos implements OnInit {
   private route = inject(ActivatedRoute);
   protected photos = signal<UserPhoto[]>([]);
   protected loading = signal(false);
+  
 
   ngOnInit(): void {
     const userId = this.route.parent?.snapshot.paramMap.get('id');
@@ -31,12 +32,17 @@ export class UserPhotos implements OnInit {
   }
 
   onUploadImage(file: File){
+    
     this.loading.set(true);
     this.userService.uploadPhoto(file).subscribe({
       next: photo => {
         this.userService.editMode.set(false);
         this.loading.set(false);
-        this.photos.update(photos => [...photos, photo])
+        this.photos.update(photos => [...photos, photo]);
+        //check if user has at least 1 image when register
+        if(!this.userService.user()?.imageUrl){
+          this.setMainLocalPhoto(photo);
+        }
       },
       error: error => {
         console.log('Error uploading image', error);
@@ -48,14 +54,7 @@ export class UserPhotos implements OnInit {
   setMainPhoto(photo : UserPhoto){
     this.userService.setMainPhoto(photo).subscribe({
       next : () => {
-        const currentUser = this.accountService.currentUser();
-        if(currentUser) currentUser.imageURL = photo.url;
-        this.accountService.setCurrentUser(currentUser as Account);
-        this.userService.user.update(user => ({
-          //take existing props of user
-          ...user,
-          imageUrl: photo.url
-        }) as User)
+        this.setMainLocalPhoto(photo);
       }
     })
   }
@@ -68,5 +67,14 @@ export class UserPhotos implements OnInit {
     })
   }
 
-  
+  private setMainLocalPhoto(photo : UserPhoto){
+    const currentUser = this.accountService.currentUser();
+        if(currentUser) currentUser.imageURL = photo.url;
+        this.accountService.setCurrentUser(currentUser as Account);
+        this.userService.user.update(user => ({
+          //take existing props of user
+          ...user,
+          imageUrl: photo.url
+        }) as User)
+  }
 }
