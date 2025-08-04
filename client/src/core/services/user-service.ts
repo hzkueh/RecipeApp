@@ -1,8 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { EditableUSer, User, UserPhoto } from '../../types/user';
+import { EditableUSer, User, UserParams, UserPhoto } from '../../types/user';
 import { tap } from 'rxjs';
+import { PaginatedResult } from '../../types/pagination';
 
 @Injectable({
   providedIn: 'root'
@@ -15,8 +16,22 @@ export class UserService {
   user = signal<User | null>(null);
 
 
-  getUsers(){
-    return this.http.get<User[]>(this.baseUrl + 'user');
+  getUsers(userParams : UserParams){
+    let params = new HttpParams();
+
+    params = params.append('pageNumber', userParams.pageNumber);
+    params = params.append('pageSize', userParams.pageSize);
+    params = params.append('minAge', userParams.minAge);
+    params = params.append('maxAge', userParams.maxAge);
+    params = params.append('orderBy', userParams.orderBy);
+
+    if(userParams.gender) params = params.append('gender', userParams.gender);
+
+    return this.http.get<PaginatedResult<User>>(this.baseUrl + 'user', {params}).pipe(
+      tap( () => {
+        localStorage.setItem('filters', JSON.stringify(userParams))
+      }) 
+    );
   }
 
   getUser(id: string){

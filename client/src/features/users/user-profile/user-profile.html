@@ -6,7 +6,7 @@
         </div>
         <div class="flex gap-3">
             <span class="font-semibold">Last Active: </span>
-            <span>{{user.lastActivity | date: 'MMM dd, yyyy hh:mm a'}}</span>
+            <span>{{user.lastActivity | timeAgo}}</span>
         </div>
         <h3 class="text-lg font-semibold text-primary">About {{user.displayName}}</h3>
 
