@@ -33,3 +33,9 @@ export class UserParams {
   pageSize = 10;
   orderBy = 'lastActivity';
 }
+
+export class LikeParams {
+  predicate = 'liked';
+  pageNumber = 1;
+  pageSize = 10;
+}

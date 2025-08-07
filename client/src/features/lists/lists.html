@@ -1,1 +1,40 @@
-<p>lists works!</p>
+
+@if(paginatedResult(); as paginatedResult){
+        <div class="flex flex-col w-full">
+            <div class="flex justify-between items-center">
+                <div class="tabs tabs-box tabs-large text-primary w-fit">
+                    @for (tab of tabs; track $index) {
+                    <button role="tab" class="tab" [class.tab-active]="predicate == tab.value" (click)="setPredicate(tab.value)">
+                        {{tab.label}}
+                    </button>
+                    }
+                </div>
+                @if(paginatedResult.metaData; as metaData){
+                    <app-paginator
+                    [hidden]="metaData.totalCount === 0" 
+                    [pageNumber]="metaData.currentPage"
+                    [pageSize]="metaData.pageSize"
+                    [totalCount]="metaData.totalCount"
+                    [totalPages]="metaData.totalPages"
+                    (pageChange)="onPageChange($event)"
+                    />
+                }
+            </div>
+            @if(paginatedResult.items; as users){
+                @if(users.length > 0){
+                <div class="grid grid-cols-5 gap-3 mt-3">
+                    @for (user of users; track user.id) {
+                        <app-user-card [user]="user" />
+                    }
+                </div>
+                }
+                @else {
+                <div class="grid grid-cols-5 gap-3 mt-3">
+                        No result for this filter
+                    </div>
+                }
+            }
+        </div>
+}
+
+

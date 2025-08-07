@@ -4,6 +4,7 @@ import { filter } from 'rxjs';
 import { AgePipe } from '../../../core/pipes/age-pipe';
 import { AccountService } from '../../../core/services/account-service';
 import { UserService } from '../../../core/services/user-service';
+import { LikesService } from '../../../core/services/likes-service';
 
 
 @Component({
@@ -18,6 +19,7 @@ export class UserDetail implements OnInit {
   private router = inject(Router);
   private accountService = inject(AccountService);
   protected userService = inject(UserService);
+  protected likeService = inject(LikesService);
 
   
   protected title = signal<string | undefined>('Profile');
@@ -38,5 +40,5 @@ export class UserDetail implements OnInit {
     })
   }
 
-
+  
 }

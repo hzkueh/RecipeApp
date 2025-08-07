@@ -33,7 +33,8 @@ export class UserList implements OnInit{
   }
 
   loadUsers(){
-    this.userService.getUsers(this.userParams).subscribe({
+    this.userService.getUsers(this.userParams)
+    .subscribe({
       next: result => {
         this.paginatedUsers.set(result);
       }
