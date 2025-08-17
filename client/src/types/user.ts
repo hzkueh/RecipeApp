@@ -8,7 +8,8 @@ export type User = {
   gender: string
   description?: string
   city: string
-  country: string
+  country: string,
+  
 }
 
 export type UserPhoto = {

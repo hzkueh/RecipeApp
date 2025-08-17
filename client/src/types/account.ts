@@ -4,6 +4,7 @@ export type Account = {
     email : string;
     token : string;
     imageURL? : string;
+    roles : string[];
 }
 
 export type LoginCreds = {
