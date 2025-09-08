@@ -6,9 +6,13 @@
 
             <div class="card-body">
                 <div class="flex flex-col items-center">
-                    <div class="flex text-2xl text-primary">
+                    <div class="flex text-2xl text-primary items-center">
                         {{user.displayName}}, {{user.dateOfBirth | age}}
+                        @if(presenceService.onlineUsers().includes(user.id)){
+                            <span class="status status-success status-xl ml-3"></span>
+                        }
                     </div>
+                    
 
                     <div class="text-sm">
                         {{user.city}} , {{user.country}}
