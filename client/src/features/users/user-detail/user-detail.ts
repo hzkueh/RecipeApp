@@ -22,12 +22,20 @@ export class UserDetail implements OnInit {
   protected userService = inject(UserService);
   protected likeService = inject(LikesService);
   protected presenceService = inject(PresenceService);
-
   
+  protected hasLiked = computed( () => this.likeService.likeIds().includes(this.routeId()!));
+
   protected title = signal<string | undefined>('Profile');
+  private routeId = signal<string | null>(null);
   protected isCurrentUser = computed(() => {
-    return this.accountService.currentUser()?.id === this.route.snapshot.paramMap.get('id');
-  })
+    return this.accountService.currentUser()?.id === this.routeId();
+  });
+
+  constructor(){
+    this.route.paramMap.subscribe(params=> {
+      this.routeId.set(params.get('id'));
+    })
+  }
 
   ngOnInit(): void {
 

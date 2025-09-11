@@ -20,10 +20,10 @@ export class Nav implements OnInit {
   private router = inject(Router);
   private toast = inject(ToastService);
 
-
   protected creds : any = {};
   protected selectedTheme = signal<string>(localStorage.getItem('theme') || 'light');
   protected themes = themes;
+  protected loading = signal(false);
 
   ngOnInit(): void {
     document.documentElement.setAttribute('data-theme', this.selectedTheme());
@@ -38,7 +38,13 @@ export class Nav implements OnInit {
     if(element_theme) element_theme.blur();
   }
 
+  handleUserSelectItem(){
+    const element_theme = document.activeElement as HTMLDivElement;
+    if(element_theme) element_theme.blur();
+  }
+
   login(){
+    this.loading.set(true);
     this.accountService.login(this.creds).subscribe({
       next: () => {
         this.router.navigateByUrl('/users');
@@ -47,7 +53,8 @@ export class Nav implements OnInit {
       },
       error: error => {
         this.toast.error(error.error);
-      }
+      },
+      complete : () => this.loading.set(false)
     })
   }
 

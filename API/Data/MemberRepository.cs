@@ -54,12 +54,6 @@ public class MemberRepository(AppDbContext context) : IMemberRepository
         return await PaginationHelper.CreateAsync(query, memberParams.PageNumber, memberParams.PageSize);
     }
 
-    public async Task<bool> SaveAllAsync()
-    {
-        //one or more things are saved into database
-        return await context.SaveChangesAsync() > 0;
-    }
-
     public void Update(Member member)
     {
         context.Entry(member).State = EntityState.Modified;

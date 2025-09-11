@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers
 {
     [Authorize]
-    public class UserController(IMemberRepository memberRepository,
+    public class UserController(IUnitOfWork uow,
         IPhotoService photoService) : BaseApiController
     {
         [HttpGet]
@@ -21,14 +21,14 @@ namespace API.Controllers
         {
             memberParams.CurrentMemberId = User.GetMemberId();
 
-            return Ok(await memberRepository.GetMembersAsync(memberParams));
+            return Ok(await uow.MemberRepository.GetMembersAsync(memberParams));
         }
 
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Member>> GetUser(string id)
         {
-            var user = await memberRepository.GetMemberByIdAsync(id);
+            var user = await uow.MemberRepository.GetMemberByIdAsync(id);
             if (user == null) return NotFound();
             return user;
         }
@@ -36,7 +36,7 @@ namespace API.Controllers
         [HttpGet("{id}/photos")]
         public async Task<ActionResult<IReadOnlyList<MemberPhoto>>> GetUserPhotos(string id)
         {
-            return Ok(await memberRepository.GetMemberPhotosForMemberAsync(id));
+            return Ok(await uow.MemberRepository.GetMemberPhotosForMemberAsync(id));
         }
 
         [HttpPut]
@@ -44,7 +44,7 @@ namespace API.Controllers
         {
             var userId = User.GetMemberId();
 
-            var user = await memberRepository.GetMemberForUpdate(userId);
+            var user = await uow.MemberRepository.GetMemberForUpdate(userId);
 
             if (user == null) return BadRequest("Could not get user");
 
@@ -57,9 +57,9 @@ namespace API.Controllers
             user.User.DisplayName = userUpdateDTO.DisplayName ?? user.User.DisplayName;
 
 
-            memberRepository.Update(user); //optional
+            uow.MemberRepository.Update(user); //optional
 
-            if (await memberRepository.SaveAllAsync()) return NoContent();
+            if (await uow.Complete()) return NoContent();
 
             return BadRequest("Fail to update user");
         }
@@ -67,7 +67,7 @@ namespace API.Controllers
         [HttpPost("add-photo")]
         public async Task<ActionResult<MemberPhoto>> AddMemberPhoto([FromForm] IFormFile file)
         {
-            var member = await memberRepository.GetMemberForUpdate(User.GetMemberId());
+            var member = await uow.MemberRepository.GetMemberForUpdate(User.GetMemberId());
 
             if (member == null) return BadRequest("Cannot update member");
 
@@ -91,14 +91,14 @@ namespace API.Controllers
 
             member.MemberPhotos.Add(photo);
 
-            if (await memberRepository.SaveAllAsync()) return photo;
+            if (await uow.Complete()) return photo;
             return BadRequest("Problem adding photo");
         }
 
         [HttpPut("set-main-photo/{photoId}")]
         public async Task<ActionResult> SetMainPhoto(int photoId)
         {
-            var member = await memberRepository.GetMemberForUpdate(User.GetMemberId());
+            var member = await uow.MemberRepository.GetMemberForUpdate(User.GetMemberId());
 
             if (member == null) return BadRequest("Cannot get member from token");
 
@@ -109,7 +109,7 @@ namespace API.Controllers
             member.ImageUrl = photo.Url;
             member.User.ImageUrl = photo.Url;
 
-            if (await memberRepository.SaveAllAsync()) return NoContent();
+            if (await uow.Complete()) return NoContent();
 
             return BadRequest("Problem to set main image");
         }
@@ -117,7 +117,7 @@ namespace API.Controllers
         [HttpDelete("delete-photo/{photoId}")]
         public async Task<ActionResult> DeleteUserPhoto(int photoId)
         {
-            var member = await memberRepository.GetMemberForUpdate(User.GetMemberId());
+            var member = await uow.MemberRepository.GetMemberForUpdate(User.GetMemberId());
 
             if (member == null) return BadRequest("Cannot get member from token");
 
@@ -136,7 +136,7 @@ namespace API.Controllers
 
             member.MemberPhotos.Remove(photo);
 
-            if (await memberRepository.SaveAllAsync()) return Ok();
+            if (await uow.Complete()) return Ok();
 
             return BadRequest("Problem deleting photos");
         }
